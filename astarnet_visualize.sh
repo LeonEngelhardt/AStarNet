@@ -16,6 +16,14 @@ cd ~/Seminar/AStarNet
 
 mkdir -p ~/experiments/astarnet_visualize
 
-python script/visualize.py  -c config/inductive/wn18rr_astarnet_visualize.yaml --checkpoint {{ checkpoint }} --gpus {{ gpus }}
+CHECKPOINT_DIR=$(ls -td ~/experiments/InductiveKnowledgeGraphCompletion/WN18RRInductive/AStarNet/* 2>/dev/null | head -n 1)
+CHECKPOINT_PATH="$CHECKPOINT_DIR/model_epoch_20.pth"
+
+if [ -z "$CHECKPOINT_DIR" ] || [ ! -f "$CHECKPOINT_PATH" ]; then
+  echo "Kein passender AStarNet-Checkpoint gefunden: $CHECKPOINT_PATH"
+  exit 1
+fi
+
+python script/visualize.py -c config/inductive/wn18rr_astarnet_visualize.yaml --checkpoint "$CHECKPOINT_PATH" --gpus [0]
 
 deactivate
