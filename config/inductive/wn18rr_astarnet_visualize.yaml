@@ -1,12 +1,13 @@
-output_dir: ~/experiments/
+# config/inductive/wn18rr_astarnet_visualize.yaml
+
+output_dir: ~/experiments/astarnet_wn18rr_visualize/
 
 dataset:
   class: WN18RRInductive
   path: /home/ma/ma_ma/ma_leonenge/datasets/knowledge_graphs
-  version: {{ version }}
 
 task:
-  class: InductiveKnowledgeGraphCompletion
+  class: KnowledgeGraphCompletion
   model:
     class: AStarNet
     base_layer:
@@ -17,15 +18,14 @@ task:
       message_func: distmult
       aggregate_func: pna
       layer_norm: yes
-      dependent: no
+      dependent: yes
     num_layer: 6
     short_cut: yes
-    node_ratio: 0.05
-    test_node_ratio: 1
+    remove_one_hop: yes
   criterion: bce
   num_negative: 32
   strict_negative: yes
-  adversarial_temperature: 1
+  adversarial_temperature: 0.5
   sample_weight: no
   full_batch_eval: yes
 
@@ -37,7 +37,5 @@ engine:
   gpus: {{ gpus }}
   batch_size: 64
 
-train:
-  num_epoch: 20
-
+checkpoint: {{ checkpoint }}
 metric: mrr

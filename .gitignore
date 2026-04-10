@@ -10,3 +10,11 @@ __pycache__
 
 # macOS
 .DS_Store
+
+nbfnet_env/
+*.log
+*.ckpt
+*.pt
+*.save*
+__pycache__/
+experiments/

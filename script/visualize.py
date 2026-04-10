@@ -11,40 +11,59 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from reasoning import dataset, layer, model, task, util
 
 
+import logging
+
+logger = logging.getLogger()
+
+
+import json
+import os
+
 def load_vocab(dataset):
     name = dataset.config_dict()["class"]
     name = name.split(".")[-1].lower()
     path = os.path.dirname(os.path.dirname(__file__))
-    vocabs = []
-    for object in ["entity", "relation"]:
-        vocab_file = os.path.join(path, "data", name, "%s.txt" % object)
-        mapping = {}
-        with open(vocab_file, "r") as fin:
-            for line in fin:
-                k, v = line.strip().split("\t")
-                mapping[k] = v
-        vocab = [mapping[t] for t in getattr(dataset, "%s_vocab" % object)]
-        vocabs.append(vocab)
 
-    return vocabs
+    entity_mapping_file = "/home/ma/ma_ma/ma_leonenge/datasets/knowledge_graphs/entity.json"
+    relation_mapping_file = "/home/ma/ma_ma/ma_leonenge/datasets/knowledge_graphs/relation.json"
 
+    entity_mapping = load_entity_mapping(entity_mapping_file)
+    relation_mapping = load_relation_mapping(relation_mapping_file)
+
+    entity_vocab = [entity_mapping[str(i)]["name"] for i in range(len(dataset.entity_vocab))]
+    relation_vocab = [relation_mapping[list(relation_mapping.keys())[i]]["name"] for i in range(len(dataset.relation_vocab))]
+
+    return entity_vocab, relation_vocab
+
+def load_entity_mapping(entity_mapping_file):
+    with open(entity_mapping_file, "r") as fin:
+        entity_mapping = json.load(fin)
+    return entity_mapping
+
+def load_relation_mapping(relation_mapping_file):
+    with open(relation_mapping_file, "r") as fin:
+        relation_mapping = json.load(fin)
+    return relation_mapping
 
 def visualize(solver, sample, entity_vocab, relation_vocab):
     num_relation = len(relation_vocab)
     h_index, t_index, r_index = sample.unbind(-1)
     inverse = torch.stack([t_index, h_index, r_index + num_relation], dim=-1)
     batch = sample.unsqueeze(0)
+    
     if sample.ndim == 1:
         vis_batch = torch.stack([sample, inverse])
     else:
         is_t_neg = (h_index == h_index[0]).all()
         vis_batch = sample[:1] if is_t_neg else inverse[:1]
+        
     batch = batch.to(solver.device)
     vis_batch = vis_batch.to(solver.device)
 
     solver.model.eval()
     with torch.no_grad():
         pred, target = solver.model.predict_and_target(batch)
+        
     if isinstance(target, tuple):
         mask, target = target
         pos_pred = pred.gather(-1, target.unsqueeze(-1))
@@ -53,7 +72,9 @@ def visualize(solver, sample, entity_vocab, relation_vocab):
     else:
         pos_pred = pred.gather(-1, target.unsqueeze(-1))
         rankings = torch.sum(pos_pred <= pred, dim=-1) + 1
+
     paths, weights, num_steps = solver.model.visualize(vis_batch)
+    
     batch = batch.tolist()
     rankings = rankings.tolist()
     paths = paths.tolist()
@@ -63,11 +84,14 @@ def visualize(solver, sample, entity_vocab, relation_vocab):
     logger.warning("")
     for i in range(len(vis_batch)):
         h, t, r = vis_batch[i]
-        h_token = entity_vocab[h]
-        t_token = entity_vocab[t]
-        r_token = relation_vocab[r % num_relation]
+        
+        h_token = entity_vocab[h]  
+        t_token = entity_vocab[t]  
+        r_token = relation_vocab[r % num_relation] 
+        
         if r >= num_relation:
             r_token += "^(-1)"
+        
         logger.warning(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         logger.warning("rank(%s | %s, %s) = %g" % (t_token, h_token, r_token, rankings[i]))
 
@@ -76,14 +100,13 @@ def visualize(solver, sample, entity_vocab, relation_vocab):
                 break
             triplets = []
             for h, t, r in path[:num_step]:
-                h_token = entity_vocab[h]
-                t_token = entity_vocab[t]
-                r_token = relation_vocab[r % num_relation]
+                h_token = entity_vocab[h] 
+                t_token = entity_vocab[t]  
+                r_token = relation_vocab[r % num_relation] 
                 if r >= num_relation:
                     r_token += "^(-1)"
                 triplets.append("<%s, %s, %s>" % (h_token, r_token, t_token))
             logger.warning("weight: %g\n\t%s" % (weight, " ->\n\t".join(triplets)))
-
 
 if __name__ == "__main__":
     args, vars = util.parse_args()
