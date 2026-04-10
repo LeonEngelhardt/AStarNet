@@ -149,14 +149,14 @@ class WN18RRInductive(InductiveKnowledgeGraphDataset):
         self.path = path
 
         transductive_files = [
-            os.path.join(path, "train.txt"),
-            os.path.join(path, "valid.txt"),
-            os.path.join(path, "test.txt")
+            os.path.join(path, "trans_train.txt"),
+            os.path.join(path, "trans_valid.txt"),
+            os.path.join(path, "trans_test.txt")
         ]
         inductive_files = [
-            os.path.join(path, "train.txt"),  
-            os.path.join(path, "valid.txt"),
-            os.path.join(path, "test.txt")
+            os.path.join(path, "ind_train.txt"),
+            os.path.join(path, "ind_valid.txt"),
+            os.path.join(path, "ind_test.txt")
         ]
 
         for file in transductive_files + inductive_files:

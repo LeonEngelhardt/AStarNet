@@ -7,7 +7,7 @@ dataset:
   path: /home/ma/ma_ma/ma_leonenge/datasets/knowledge_graphs
 
 task:
-  class: KnowledgeGraphCompletion
+  class: InductiveKnowledgeGraphCompletion
   model:
     class: AStarNet
     base_layer:

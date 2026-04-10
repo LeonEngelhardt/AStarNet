@@ -1,6 +1,8 @@
 import os
 import sys
 import pprint
+import logging
+import json
 
 import torch
 
@@ -11,39 +13,28 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from reasoning import dataset, layer, model, task, util
 
 
-import logging
-
 logger = logging.getLogger()
 
+ENTITY_MAPPING_FILE = "/home/ma/ma_ma/ma_leonenge/datasets/knowledge_graphs/entity.json"
+RELATION_MAPPING_FILE = "/home/ma/ma_ma/ma_leonenge/datasets/knowledge_graphs/relation.json"
 
-import json
-import os
 
 def load_vocab(dataset):
-    name = dataset.config_dict()["class"]
-    name = name.split(".")[-1].lower()
-    path = os.path.dirname(os.path.dirname(__file__))
+    with open(ENTITY_MAPPING_FILE, "r") as fin:
+        entity_mapping = json.load(fin)
+    with open(RELATION_MAPPING_FILE, "r") as fin:
+        relation_mapping = json.load(fin)
 
-    entity_mapping_file = "/home/ma/ma_ma/ma_leonenge/datasets/knowledge_graphs/entity.json"
-    relation_mapping_file = "/home/ma/ma_ma/ma_leonenge/datasets/knowledge_graphs/relation.json"
+    if hasattr(dataset, "inductive_vocab"):
+        entity_tokens = dataset.inductive_vocab
+    else:
+        entity_tokens = dataset.entity_vocab
+    relation_tokens = dataset.relation_vocab
 
-    entity_mapping = load_entity_mapping(entity_mapping_file)
-    relation_mapping = load_relation_mapping(relation_mapping_file)
-
-    entity_vocab = [entity_mapping[str(i)]["name"] for i in range(len(dataset.entity_vocab))]
-    relation_vocab = [relation_mapping[list(relation_mapping.keys())[i]]["name"] for i in range(len(dataset.relation_vocab))]
+    entity_vocab = [entity_mapping[token]["name"] for token in entity_tokens]
+    relation_vocab = [relation_mapping[token]["name"] for token in relation_tokens]
 
     return entity_vocab, relation_vocab
-
-def load_entity_mapping(entity_mapping_file):
-    with open(entity_mapping_file, "r") as fin:
-        entity_mapping = json.load(fin)
-    return entity_mapping
-
-def load_relation_mapping(relation_mapping_file):
-    with open(relation_mapping_file, "r") as fin:
-        relation_mapping = json.load(fin)
-    return relation_mapping
 
 def visualize(solver, sample, entity_vocab, relation_vocab):
     num_relation = len(relation_vocab)
@@ -75,7 +66,6 @@ def visualize(solver, sample, entity_vocab, relation_vocab):
 
     paths, weights, num_steps = solver.model.visualize(vis_batch)
     
-    batch = batch.tolist()
     rankings = rankings.tolist()
     paths = paths.tolist()
     weights = weights.tolist()
@@ -119,7 +109,7 @@ if __name__ == "__main__":
     logger.warning("Config file: %s" % args.config)
     logger.warning(pprint.pformat(cfg))
 
-    if cfg.dataset["class"] not in ["FB15k237", "OGBLWikiKG2"]:
+    if cfg.dataset["class"] != "WN18RRInductive":
         raise ValueError("Visualization is not implemented for %s" % cfg.dataset["class"])
 
     dataset = core.Configurable.load_config_dict(cfg.dataset)
