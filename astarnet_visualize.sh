@@ -8,7 +8,7 @@
 #SBATCH --time=01:00:00
 #SBATCH --output=astarnet_visualize_%j.log
 
-source ~/Seminar/NBFNet/nbfnet_env/bin/activate
+source ~/Seminar/AStarNet/astarnet_env/bin/activate
 module load devel/cuda/11.8
 export CUDA_HOME=$(dirname $(dirname $(which nvcc)))
 export PATH="$CUDA_HOME/bin:$PATH"
