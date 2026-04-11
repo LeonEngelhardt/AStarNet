@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=astarnet_visualize
-#SBATCH --partition=gpu_h100
+#SBATCH --partition=gpu_a100_il
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=48
-#SBATCH --time=01:00:00
+#SBATCH --time=00:30:00
 #SBATCH --output=astarnet_visualize_%j.log
 
 source ~/Seminar/AStarNet/astarnet_env/bin/activate
