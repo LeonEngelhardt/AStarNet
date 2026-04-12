@@ -22,7 +22,7 @@ cd ~/Seminar/AStarNet
 mkdir -p ~/experiments/astarnet_visualize
 
 CHECKPOINT_DIR=$(ls -td ~/experiments/InductiveKnowledgeGraphCompletion/WN18RRInductive/AStarNet/* 2>/dev/null | head -n 1)
-CHECKPOINT_PATH="$CHECKPOINT_DIR/model_epoch_18.pth"
+CHECKPOINT_PATH="$CHECKPOINT_DIR/model_epoch_20.pth"
 
 if [ -z "$CHECKPOINT_DIR" ] || [ ! -f "$CHECKPOINT_PATH" ]; then
   echo "Kein passender AStarNet-Checkpoint gefunden: $CHECKPOINT_PATH"
