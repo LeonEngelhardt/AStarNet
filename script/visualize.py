@@ -117,6 +117,10 @@ if __name__ == "__main__":
 
     entity_vocab, relation_vocab = load_vocab(dataset)
 
+    # The TorchDrug engine sets `task.split` internally during train / evaluate.
+    # In visualization we call `predict_and_target()` directly, so we set it here.
+    solver.model.split = "test"
+
     g = torch.Generator()
     g.manual_seed(1024)
     index = torch.randperm(len(solver.test_set), generator=g)[:500].tolist()
